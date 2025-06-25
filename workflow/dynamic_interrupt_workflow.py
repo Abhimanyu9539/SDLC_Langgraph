@@ -1,4 +1,4 @@
-# ==================== DYNAMIC INTERRUPT WORKFLOW ====================
+# ==================== UPDATED DYNAMIC INTERRUPT WORKFLOW ====================
 # File: workflow/dynamic_interrupt_workflow.py
 
 from langgraph.graph import StateGraph, END
@@ -11,10 +11,20 @@ from nodes.dynamic_review_node import (
     revise_user_stories_dynamic, 
     route_after_po_review_dynamic
 )
+from nodes.design_documents_node import create_design_documents
+from nodes.design_review_node import (
+    design_review_dynamic,
+    revise_design_documents_dynamic,
+    route_after_design_review_dynamic
+)
 
 def create_dynamic_interrupt_workflow():
     """
     Create SDLC workflow using DYNAMIC INTERRUPTS (Official LangGraph Pattern)
+    Updated to include Design Documents creation and Design Review
+    
+    Complete workflow flow:
+    Requirements → User Stories → PO Review → Design Documents → Design Review → (Future: Code Generation)
     
     Key differences from static interrupts:
     - No interrupt_before/interrupt_after in compile()
@@ -31,7 +41,9 @@ def create_dynamic_interrupt_workflow():
     workflow.add_node("auto_generate_user_stories", auto_generate_user_stories)
     workflow.add_node("product_owner_review", product_owner_review_dynamic)  # ← Uses interrupt() inside
     workflow.add_node("revise_user_stories", revise_user_stories_dynamic)
-    workflow.add_node("create_design_documents", create_design_documents)
+    workflow.add_node("create_design_documents", create_design_documents)  # ← NEW: Design docs generation (no interrupts)
+    workflow.add_node("design_review", design_review_dynamic)  # ← NEW: Design review with interrupts
+    workflow.add_node("revise_design_documents", revise_design_documents_dynamic)  # ← NEW: Design revision
     
     # Set entry point
     workflow.set_entry_point("ui_user_inputs_requirements")
@@ -50,9 +62,24 @@ def create_dynamic_interrupt_workflow():
         }
     )
 
-    # Route back to PO review after revision (for iteration cycles)
+    # Route back to PO review after user story revision (for iteration cycles)
     workflow.add_edge("revise_user_stories", "product_owner_review")
-    workflow.add_edge("create_design_documents", END)
+    
+    # Design documents flow
+    workflow.add_edge("create_design_documents", "design_review")
+    
+    # Add conditional routing after design review
+    workflow.add_conditional_edges(
+        "design_review",
+        route_after_design_review_dynamic,
+        {
+            "generate_code": END,  # Approved - end for now (future: go to code generation)
+            "revise_design_documents": "revise_design_documents"  # Needs revision
+        }
+    )
+    
+    # Route back to design review after design revision (for iteration cycles)
+    workflow.add_edge("revise_design_documents", "design_review")
     
     # ⭐ COMPILE WITHOUT interrupt_before - interrupts are INSIDE nodes
     compiled_workflow = workflow.compile(
@@ -62,5 +89,10 @@ def create_dynamic_interrupt_workflow():
     print("🔧 Dynamic LangGraph interrupt workflow created")
     print("🎯 Uses interrupt() INSIDE nodes (official pattern)")
     print("⚡ Resume with Command(resume=value)")
+    print("🆕 Now includes:")
+    print("   • Product Owner Review (with interrupts)")
+    print("   • Design Documents Creation (generation only)")
+    print("   • Design Review (with interrupts)")
+    print("   • User Story & Design Document revision cycles")
     
     return compiled_workflow

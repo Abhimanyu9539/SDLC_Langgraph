@@ -15,7 +15,6 @@ def create_design_documents(state: SDLCState) -> SDLCState:
     - Approved user stories
     - Original requirements
     
-    Similar to user story generation - just creates and stores the documents
     """
     
     print("\n🎨 Creating Design Documents - Functional and Technical")

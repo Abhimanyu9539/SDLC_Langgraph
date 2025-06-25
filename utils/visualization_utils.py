@@ -77,7 +77,7 @@ graph TD
         print(mermaid_diagram.strip())
         print("-"*80)
     
-    def save_workflow_image(self, filename="workflow.png"):
+    def save_workflow_image(self, filename="workflow_graph.png"):
         """Save workflow graph as PNG image"""
         if not self.workflow:
             print("❌ Workflow not provided. Please create workflow first.")

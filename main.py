@@ -83,7 +83,7 @@ async def run_dynamic_sdlc_workflow():
         return None
 
 async def display_dynamic_results(result: dict):
-    """Display results from dynamic workflow execution"""
+    """Display results from dynamic workflow execution - Updated for Design Documents"""
     
     print("\n" + "="*70)
     print("🎉 DYNAMIC WORKFLOW EXECUTION RESULTS")
@@ -94,6 +94,7 @@ async def display_dynamic_results(result: dict):
     # Basic info with dynamic-specific metrics
     print(f"📊 Final Stage: {result['final_stage']}")
     print(f"📚 User Stories Generated: {result['user_stories_count']}")
+    print(f"🎨 Design Documents Created: {'Yes' if result.get('design_docs_created') else 'No'}")
     print(f"🔄 Iterations Completed: {result['iterations']}")
     print(f"✅ Final Approval Status: {result['approval_status'].upper()}")
     print(f"🛑 Interrupts Handled: {result['interrupts_handled']}")
@@ -122,7 +123,56 @@ async def display_dynamic_results(result: dict):
             criteria_count = len(story.get('acceptance_criteria', []))
             print(f"   ✅ {criteria_count} acceptance criteria defined")
     
-    # Show review history with dynamic-specific info
+    # Show design documents if created
+    design_docs = final_state.get("design_docs", {})
+    if design_docs:
+        print(f"\n🎨 Design Documents Created:")
+        
+        # Show title and summary
+        doc_title = design_docs.get("title", "Technical Design Document")
+        doc_summary = design_docs.get("summary", "No summary available")
+        print(f"   📄 {doc_title}")
+        print(f"   📝 Summary: {doc_summary[:150]}{'...' if len(doc_summary) > 150 else ''}")
+        
+        # Show key sections with details
+        sections_to_show = [
+            ("system_architecture", "🏗️ System Architecture"),
+            ("database_design", "🗄️ Database Design"),
+            ("api_design", "🔌 API Design"),
+            ("ui_design", "🎨 UI Design"),
+            ("security_performance", "🔒 Security & Performance")
+        ]
+        
+        print(f"\n   📋 Design Sections:")
+        for section_key, section_name in sections_to_show:
+            section_data = design_docs.get(section_key)
+            if section_data and isinstance(section_data, dict):
+                overview = section_data.get('overview', 'No overview available')
+                print(f"      {section_name}: {overview[:80]}{'...' if len(overview) > 80 else ''}")
+                
+                # Show specific details for some sections
+                if section_key == "system_architecture":
+                    components = section_data.get('components', [])
+                    if components:
+                        print(f"         Components: {', '.join(components[:3])}{'...' if len(components) > 3 else ''}")
+                
+                elif section_key == "database_design":
+                    entities = section_data.get('entities', [])
+                    if entities:
+                        print(f"         Entities: {', '.join(entities[:3])}{'...' if len(entities) > 3 else ''}")
+                
+                elif section_key == "api_design":
+                    endpoints = section_data.get('core_endpoints', [])
+                    if endpoints:
+                        print(f"         Endpoints: {len(endpoints)} core endpoints defined")
+        
+        # Show implementation notes if available
+        impl_notes = design_docs.get("implementation_notes", "")
+        if impl_notes:
+            notes_preview = impl_notes[:100] + "..." if len(impl_notes) > 100 else impl_notes
+            print(f"\n   📌 Implementation Notes: {notes_preview}")
+    
+    # Show review history with enhanced info for both PO and Design reviews
     review_history = final_state.get("review_history", [])
     if review_history:
         print(f"\n📚 COMPLETE REVIEW HISTORY ({len(review_history)} reviews):")
@@ -130,10 +180,15 @@ async def display_dynamic_results(result: dict):
             iteration = review.get('iteration', i-1)
             reviewer = review.get('reviewer', 'Unknown')
             status = review.get('status', 'Unknown')
+            stage = review.get('stage', 'unknown')
             method = review.get('review_method', 'unknown')
             feedback = review.get('feedback', 'No feedback')
             
-            print(f"\n   📋 Review {i} (Iteration {iteration}):")
+            # Determine review type emoji
+            stage_emoji = "👤" if stage == "product_owner_review" else "👨‍💻" if stage == "design_review" else "📋"
+            stage_name = stage.replace('_', ' ').title()
+            
+            print(f"\n   {stage_emoji} Review {i} - {stage_name} (Iteration {iteration}):")
             print(f"      👤 Reviewer: {reviewer}")
             print(f"      ⚡ Method: {method}")
             print(f"      ✅ Status: {status.upper()}")
@@ -144,18 +199,17 @@ async def display_dynamic_results(result: dict):
             if suggestions:
                 print(f"      💡 Suggestions: {len(suggestions)} provided")
             
-            # Show scores if available
-            bv_score = review.get('business_value_score')
-            comp_score = review.get('completeness_score')
-            if bv_score and comp_score:
-                print(f"      📊 Scores - Business Value: {bv_score}/10, Completeness: {comp_score}/10")
-    
-    # Show design documents if created
-    design_docs = final_state.get("design_docs", {})
-    if design_docs:
-        print(f"\n🎨 Design Documents Created:")
-        for doc_type, doc_desc in design_docs.items():
-            print(f"   📄 {doc_type.replace('_', ' ').title()}: {doc_desc}")
+            # Show scores based on review type
+            if stage == "product_owner_review":
+                bv_score = review.get('business_value_score')
+                comp_score = review.get('completeness_score')
+                if bv_score and comp_score:
+                    print(f"      📊 Scores - Business Value: {bv_score}/10, Completeness: {comp_score}/10")
+            elif stage == "design_review":
+                tech_score = review.get('technical_score')
+                comp_score = review.get('completeness_score')
+                if tech_score and comp_score:
+                    print(f"      📊 Scores - Technical: {tech_score}/10, Completeness: {comp_score}/10")
     
     print(f"\n🕒 Completed at: {result.get('timestamp', 'Unknown')}")
     print("✅ Dynamic interrupt workflow completed successfully!")
@@ -225,7 +279,7 @@ async def main():
                 try:
                     workflow = create_dynamic_interrupt_workflow()
                     visualizer = WorkflowVisualizer(workflow)
-                    visualizer.save_workflow_image("dynamic_workflow_graph.png")
+                    visualizer.save_workflow_image("workflow_graph.png")
                     
                 except Exception as e:
                     print(f"❌ Could not display graph: {e}")
