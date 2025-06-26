@@ -19,6 +19,11 @@ from nodes.design_review_node import (
 )
 
 from nodes.generate_code_node import generate_code
+from nodes.code_review_node import (
+    code_review_dynamic,
+    route_after_code_review_dynamic
+)
+from nodes.fix_code_after_review_node import fix_code_after_review_dynamic
 
 def create_dynamic_interrupt_workflow():
     """
@@ -47,6 +52,8 @@ def create_dynamic_interrupt_workflow():
     workflow.add_node("design_review", design_review_dynamic)  # ← NEW: Design review with interrupts
     workflow.add_node("revise_design_documents", revise_design_documents_dynamic)  # ← NEW: Design revision
     workflow.add_node("generate_code", generate_code)
+    workflow.add_node("code_review", code_review_dynamic)
+    workflow.add_node("fix_code_after_review", fix_code_after_review_dynamic)
 
     # Set entry point
     workflow.set_entry_point("ui_user_inputs_requirements")
@@ -83,7 +90,19 @@ def create_dynamic_interrupt_workflow():
     
     # Route back to design review after design revision (for iteration cycles)
     workflow.add_edge("revise_design_documents", "design_review")
-    workflow.add_edge("generate_code", END)
+
+    # Code generation flow
+    workflow.add_edge("generate_code", "code_review")
+    workflow.add_conditional_edges(
+        "code_review",
+        fix_code_after_review_dynamic,
+        {
+            "security_review": END,  # Approved - end for now
+            "fix_code_after_review": "fix_code_after_review"  # Needs revision
+        }
+    
+    )
+    workflow.add_edge("fix_code_after_review", "code_review")
     
     # ⭐ COMPILE WITHOUT interrupt_before - interrupts are INSIDE nodes
     compiled_workflow = workflow.compile(
