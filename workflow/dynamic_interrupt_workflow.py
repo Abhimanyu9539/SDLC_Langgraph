@@ -95,7 +95,7 @@ def create_dynamic_interrupt_workflow():
     workflow.add_edge("generate_code", "code_review")
     workflow.add_conditional_edges(
         "code_review",
-        fix_code_after_review_dynamic,
+        route_after_code_review_dynamic,
         {
             "security_review": END,  # Approved - end for now
             "fix_code_after_review": "fix_code_after_review"  # Needs revision

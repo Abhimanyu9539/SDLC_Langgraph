@@ -109,7 +109,7 @@ class DynamicWorkflowRunner:
         
         print(f"🔍 Interrupt type: {interrupt_type}")
         
-        # Route to appropriate handler based on interrupt type
+        # Review Choice Interrupts
         if interrupt_type == "review_choice":
             return self._handle_review_choice_interrupt(interrupt_data)
         elif interrupt_type == "human_review_decision":
@@ -118,7 +118,8 @@ class DynamicWorkflowRunner:
             return self._handle_human_review_feedback(interrupt_data)
         elif interrupt_type == "human_review_suggestions":
             return self._handle_human_review_suggestions(interrupt_data)
-        # NEW: Design Review Interrupts
+        
+        # Design Review Interrupts
         elif interrupt_type == "design_review_choice":
             return self._handle_design_review_choice_interrupt(interrupt_data)
         elif interrupt_type == "human_design_review_decision":
@@ -127,6 +128,17 @@ class DynamicWorkflowRunner:
             return self._handle_human_design_review_feedback(interrupt_data)
         elif interrupt_type == "human_design_review_suggestions":
             return self._handle_human_design_review_suggestions(interrupt_data)
+
+        # Code Review Interrupts
+        elif interrupt_type == "code_review_choice":
+            return self._handle_code_review_choice_interrupt(interrupt_data)
+        elif interrupt_type == "human_code_review_decision":
+            return self._handle_human_code_review_decision(interrupt_data)
+        elif interrupt_type == "human_code_review_feedback":
+            return self._handle_human_code_review_feedback(interrupt_data)
+        elif interrupt_type == "human_code_review_suggestions":
+            return self._handle_human_code_review_suggestions(interrupt_data)
+        
         else:
             # Generic handler for unknown types
             return self._handle_generic_interrupt(interrupt_data)
@@ -334,6 +346,120 @@ class DynamicWorkflowRunner:
             print(f"✅ Technical suggestion recorded: {suggestion}")
         else:
             print("⏭️ No technical suggestion provided - skipping")
+            suggestion = ""
+        
+        return suggestion
+    
+    # ==================== CODE REVIEW INTERRUPT HANDLERS ====================
+    def _handle_code_review_choice_interrupt(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle code review choice interrupt"""
+        
+        question = interrupt_data.get("question", "Choose code review method:")
+        options = interrupt_data.get("options", {})
+        context = interrupt_data.get("context", {})
+        code_preview = interrupt_data.get("code_preview", {})
+        
+        print(f"\n❓ {question}")
+        print(f"📊 Context: {context.get('code_files_count', 0)} code files, iteration {context.get('current_iteration', 0)}")
+        
+        if code_preview:
+            print(f"\n💻 Code Files Preview:")
+            files = code_preview.get('files', [])
+            if files:
+                print(f"  📁 Files: {', '.join(files)}")
+            print(f"  📊 Total files: {code_preview.get('total_files', 0)}")
+            
+            file_sizes = code_preview.get('file_sizes', {})
+            if file_sizes:
+                print(f"  📏 File sizes:")
+                for filename, size in file_sizes.items():
+                    print(f"     {filename}: {size} characters")
+        
+        print(f"\n🎛️ Available options:")
+        for key, description in options.items():
+            print(f"  {key}: {description}")
+        
+        while True:
+            choice = input(f"\nYour choice ({'/'.join(options.keys())}): ").strip().lower()
+            if choice in options:
+                print(f"✅ You selected: {options[choice]}")
+                return choice
+            print(f"❌ Invalid choice. Please choose from: {list(options.keys())}")
+    
+    def _handle_human_code_review_decision(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle human code review decision"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        options = interrupt_data.get("options", {})
+        code_files = interrupt_data.get("code_files", {})
+        
+        print(f"\n📋 {prompt}")
+        
+        if code_files:
+            total_files = code_files.get('total_files', 0)
+            print(f"\n💻 Code Review Summary: {total_files} files")
+            
+            files = code_files.get('files', [])
+            for file_info in files:
+                filename = file_info.get('filename', 'Unknown')
+                lines = file_info.get('lines', 0)
+                size = file_info.get('size_chars', 0)
+                preview = file_info.get('preview', '')
+                
+                print(f"\n📄 {filename} ({lines} lines, {size} chars)")
+                print(f"   Preview: {preview[:100]}{'...' if len(preview) > 100 else ''}")
+        
+        print(f"\n❓ {question}")
+        for key, description in options.items():
+            print(f"  {key}: {description}")
+        
+        while True:
+            decision = input(f"\nYour decision ({'/'.join(options.keys())}): ").strip().lower()
+            if decision in options:
+                print(f"✅ You decided: {options[decision]}")
+                return decision
+            print(f"❌ Invalid decision. Please choose from: {list(options.keys())}")
+    
+    def _handle_human_code_review_feedback(self, interrupt_data: Dict[str, Any]) -> Dict[str, str]:
+        """Handle code review feedback collection"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        
+        print(f"\n💬 {prompt}")
+        print(f"❓ {question}")
+        
+        feedback = input("\nYour detailed code feedback: ").strip()
+        
+        if not feedback:
+            feedback = "No specific code feedback provided"
+        
+        print(f"✅ Code feedback recorded: {feedback[:100]}{'...' if len(feedback) > 100 else ''}")
+        
+        return {"feedback": feedback}
+    
+    def _handle_human_code_review_suggestions(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle code review suggestions collection"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        current_feedback = interrupt_data.get("current_feedback", "")
+        help_text = interrupt_data.get("help_text", "")
+        
+        print(f"\n💡 {prompt}")
+        if current_feedback:
+            print(f"📝 Current feedback: {current_feedback}")
+        print(f"❓ {question}")
+        if help_text:
+            print(f"ℹ️ {help_text}")
+        
+        suggestion = input("\nYour code suggestion (or press Enter to skip): ").strip()
+        
+        if suggestion:
+            print(f"✅ Code suggestion recorded: {suggestion}")
+        else:
+            print("⏭️ No code suggestion provided - skipping")
             suggestion = ""
         
         return suggestion
