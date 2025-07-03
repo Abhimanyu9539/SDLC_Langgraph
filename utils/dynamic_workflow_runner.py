@@ -11,7 +11,7 @@ from datetime import datetime
 class DynamicWorkflowRunner:
     """
     Workflow runner using DYNAMIC INTERRUPTS (Official LangGraph Pattern)
-    Updated to handle both PO Review and Design Review interrupts
+    Updated to handle PO Review, Design Review, and Code Review interrupts
     
     Key differences from static approach:
     - No manual state management
@@ -26,7 +26,7 @@ class DynamicWorkflowRunner:
     
     async def run_workflow_with_dynamic_interrupts(self, initial_state: SDLCState) -> Dict[str, Any]:
         """
-        Run workflow using dynamic interrupts - handles both PO and Design reviews!
+        Run workflow using dynamic interrupts - handles PO, Design, and Code reviews!
         
         How it works:
         1. Start workflow normally
@@ -83,6 +83,8 @@ class DynamicWorkflowRunner:
                 "final_state": result,
                 "user_stories_count": len(result.get("user_stories", [])),
                 "design_docs_created": bool(result.get("design_docs")),
+                "security_scan_results": len(result.get("security_scan_results", {})),
+                "test_files_generated": len(result.get("test_cases", {})),
                 "final_stage": result.get("current_stage", "unknown"),
                 "iterations": result.get("iteration_count", 0),
                 "approval_status": result.get("approval_status", "unknown"),
@@ -101,7 +103,7 @@ class DynamicWorkflowRunner:
     async def _handle_single_interrupt(self, interrupt_obj) -> Any:
         """
         Handle a single interrupt with user interaction
-        Now supports both PO Review and Design Review interrupts
+        Now supports PO Review, Design Review, and Code Review interrupts
         """
         
         interrupt_data = interrupt_obj.value
@@ -109,7 +111,7 @@ class DynamicWorkflowRunner:
         
         print(f"🔍 Interrupt type: {interrupt_type}")
         
-        # Review Choice Interrupts
+        # Route to appropriate handler based on interrupt type
         if interrupt_type == "review_choice":
             return self._handle_review_choice_interrupt(interrupt_data)
         elif interrupt_type == "human_review_decision":
@@ -128,8 +130,8 @@ class DynamicWorkflowRunner:
             return self._handle_human_design_review_feedback(interrupt_data)
         elif interrupt_type == "human_design_review_suggestions":
             return self._handle_human_design_review_suggestions(interrupt_data)
-
-        # Code Review Interrupts
+        
+        # NEW: Code Review Interrupts
         elif interrupt_type == "code_review_choice":
             return self._handle_code_review_choice_interrupt(interrupt_data)
         elif interrupt_type == "human_code_review_decision":
@@ -138,6 +140,26 @@ class DynamicWorkflowRunner:
             return self._handle_human_code_review_feedback(interrupt_data)
         elif interrupt_type == "human_code_review_suggestions":
             return self._handle_human_code_review_suggestions(interrupt_data)
+        
+        # NEW: Security Review Interrupts
+        elif interrupt_type == "security_review_choice":
+            return self._handle_security_review_choice_interrupt(interrupt_data)
+        elif interrupt_type == "human_security_review_decision":
+            return self._handle_human_security_review_decision(interrupt_data)
+        elif interrupt_type == "human_security_review_feedback":
+            return self._handle_human_security_review_feedback(interrupt_data)
+        elif interrupt_type == "human_security_risk_assessment":
+            return self._handle_human_security_risk_assessment(interrupt_data)
+        
+        # NEW: Test Cases Review Interrupts
+        elif interrupt_type == "test_cases_review_choice":
+            return self._handle_test_cases_review_choice_interrupt(interrupt_data)
+        elif interrupt_type == "human_test_review_decision":
+            return self._handle_human_test_review_decision(interrupt_data)
+        elif interrupt_type == "human_test_review_feedback":
+            return self._handle_human_test_review_feedback(interrupt_data)
+        elif interrupt_type == "human_test_improvement_suggestions":
+            return self._handle_human_test_improvement_suggestions(interrupt_data)
         
         else:
             # Generic handler for unknown types
@@ -243,6 +265,278 @@ class DynamicWorkflowRunner:
             suggestion = ""
         
         return suggestion
+    
+    # ==================== NEW: SECURITY REVIEW INTERRUPT HANDLERS ====================
+    
+    def _handle_security_review_choice_interrupt(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle security review choice interrupt"""
+        
+        question = interrupt_data.get("question", "Choose security review method:")
+        options = interrupt_data.get("options", {})
+        context = interrupt_data.get("context", {})
+        security_preview = interrupt_data.get("security_preview", {})
+        
+        print(f"\n❓ {question}")
+        print(f"🔒 Context: {context.get('code_files_count', 0)} code files, iteration {context.get('current_iteration', 0)}")
+        
+        if security_preview:
+            print(f"\n🔍 Security Analysis Preview:")
+            files = security_preview.get('files', [])
+            if files:
+                print(f"  📁 Files: {', '.join(files)}")
+            
+            languages = security_preview.get('code_languages', [])
+            if languages:
+                print(f"  💻 Languages: {', '.join(languages)}")
+            
+            security_areas = security_preview.get('potential_security_areas', [])
+            if security_areas:
+                print(f"  🔒 Security Areas: {', '.join(security_areas)}")
+        
+        print(f"\n🎛️ Available options:")
+        for key, description in options.items():
+            print(f"  {key}: {description}")
+        
+        while True:
+            choice = input(f"\nYour choice ({'/'.join(options.keys())}): ").strip().lower()
+            if choice in options:
+                print(f"✅ You selected: {options[choice]}")
+                return choice
+            print(f"❌ Invalid choice. Please choose from: {list(options.keys())}")
+    
+    def _handle_human_security_review_decision(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle human security review decision"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        options = interrupt_data.get("options", {})
+        security_analysis = interrupt_data.get("security_analysis", {})
+        
+        print(f"\n📋 {prompt}")
+        
+        if security_analysis:
+            total_files = security_analysis.get('total_files', 0)
+            languages = security_analysis.get('languages', [])
+            security_areas = security_analysis.get('security_areas', [])
+            
+            print(f"\n🔒 Security Analysis Summary:")
+            print(f"  📊 Total files: {total_files}")
+            if languages:
+                print(f"  💻 Languages: {', '.join(languages)}")
+            if security_areas:
+                print(f"  🔍 Security areas: {', '.join(security_areas)}")
+            
+            files = security_analysis.get('files', [])
+            for file_info in files[:3]:  # Show first 3 files
+                filename = file_info.get('filename', 'Unknown')
+                lines = file_info.get('lines', 0)
+                security_keywords = file_info.get('security_keywords', {})
+                
+                print(f"\n📄 {filename} ({lines} lines)")
+                if security_keywords:
+                    print(f"   🔑 Security keywords: {', '.join(security_keywords.keys())}")
+                
+                preview = file_info.get('preview', '')
+                if preview:
+                    print(f"   Preview: {preview[:150]}{'...' if len(preview) > 150 else ''}")
+        
+        print(f"\n❓ {question}")
+        for key, description in options.items():
+            print(f"  {key}: {description}")
+        
+        while True:
+            decision = input(f"\nYour decision ({'/'.join(options.keys())}): ").strip().lower()
+            if decision in options:
+                print(f"✅ You decided: {options[decision]}")
+                return decision
+            print(f"❌ Invalid decision. Please choose from: {list(options.keys())}")
+    
+    def _handle_human_security_review_feedback(self, interrupt_data: Dict[str, Any]) -> Dict[str, str]:
+        """Handle security review feedback collection"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        
+        print(f"\n💬 {prompt}")
+        print(f"❓ {question}")
+        
+        feedback = input("\nYour detailed security feedback: ").strip()
+        
+        if not feedback:
+            feedback = "No specific security feedback provided"
+        
+        print(f"✅ Security feedback recorded: {feedback[:100]}{'...' if len(feedback) > 100 else ''}")
+        
+        return {"feedback": feedback}
+    
+    def _handle_human_security_risk_assessment(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle security risk assessment collection"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        risk_options = interrupt_data.get("risk_options", {})
+        current_feedback = interrupt_data.get("current_feedback", "")
+        
+        print(f"\n🎯 {prompt}")
+        if current_feedback:
+            print(f"📝 Current feedback: {current_feedback}")
+        print(f"❓ {question}")
+        
+        if risk_options:
+            print(f"\n🚨 Risk Level Options:")
+            for key, description in risk_options.items():
+                print(f"  {key}: {description}")
+            
+            while True:
+                risk_choice = input(f"\nRisk level ({'/'.join(risk_options.keys())}): ").strip().lower()
+                if risk_choice in risk_options:
+                    print(f"✅ Risk level set: {risk_options[risk_choice]}")
+                    
+                    # Get suggestions
+                    suggestions = input("\nSpecific security improvement suggestions (optional): ").strip()
+                    
+                    return {
+                        "risk_level": risk_choice,
+                        "suggestions": suggestions if suggestions else ""
+                    }
+                print(f"❌ Invalid risk level. Please choose from: {list(risk_options.keys())}")
+        else:
+            suggestion = input("\nYour security improvement suggestion: ").strip()
+            return suggestion if suggestion else "medium"
+    
+    # ==================== NEW: TEST CASES REVIEW INTERRUPT HANDLERS ====================
+    
+    def _handle_test_cases_review_choice_interrupt(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle test cases review choice interrupt"""
+        
+        question = interrupt_data.get("question", "Choose test review method:")
+        options = interrupt_data.get("options", {})
+        context = interrupt_data.get("context", {})
+        test_preview = interrupt_data.get("test_preview", {})
+        
+        print(f"\n❓ {question}")
+        print(f"🧪 Context: {context.get('test_files_count', 0)} test files, iteration {context.get('current_iteration', 0)}")
+        
+        if test_preview:
+            print(f"\n📊 Test Cases Preview:")
+            files = test_preview.get('files', [])
+            if files:
+                print(f"  📁 Test files: {', '.join(files)}")
+            print(f"  📊 Total files: {test_preview.get('total_files', 0)}")
+            
+            test_stats = test_preview.get('test_stats', {})
+            if test_stats:
+                print(f"  🔢 Test functions: {test_stats.get('total_test_functions', 0)}")
+                print(f"  📋 Test classes: {test_stats.get('test_classes', 0)}")
+                print(f"  🔧 Fixtures: {test_stats.get('fixtures', 0)}")
+            
+            coverage_areas = test_preview.get('coverage_areas', [])
+            if coverage_areas:
+                print(f"  🎯 Coverage areas: {', '.join(coverage_areas)}")
+        
+        print(f"\n🎛️ Available options:")
+        for key, description in options.items():
+            print(f"  {key}: {description}")
+        
+        while True:
+            choice = input(f"\nYour choice ({'/'.join(options.keys())}): ").strip().lower()
+            if choice in options:
+                print(f"✅ You selected: {options[choice]}")
+                return choice
+            print(f"❌ Invalid choice. Please choose from: {list(options.keys())}")
+    
+    def _handle_human_test_review_decision(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle human test review decision"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        options = interrupt_data.get("options", {})
+        test_analysis = interrupt_data.get("test_analysis", {})
+        
+        print(f"\n📋 {prompt}")
+        
+        if test_analysis:
+            total_files = test_analysis.get('total_files', 0)
+            statistics = test_analysis.get('statistics', {})
+            coverage_areas = test_analysis.get('coverage_areas', [])
+            
+            print(f"\n🧪 Test Analysis Summary:")
+            print(f"  📊 Total test files: {total_files}")
+            
+            if statistics:
+                print(f"  🔢 Test functions: {statistics.get('total_test_functions', 0)}")
+                print(f"  📋 Test classes: {statistics.get('test_classes', 0)}")
+                print(f"  🔧 Fixtures: {statistics.get('fixtures', 0)}")
+                print(f"  📊 Parametrized tests: {statistics.get('parametrized_tests', 0)}")
+            
+            if coverage_areas:
+                print(f"  🎯 Coverage areas: {', '.join(coverage_areas)}")
+            
+            files = test_analysis.get('files', [])
+            for file_info in files[:2]:  # Show first 2 test files
+                filename = file_info.get('filename', 'Unknown')
+                lines = file_info.get('lines', 0)
+                test_functions = file_info.get('test_functions', 0)
+                test_classes = file_info.get('test_classes', 0)
+                
+                print(f"\n📄 {filename} ({lines} lines)")
+                print(f"   🔢 Test functions: {test_functions}, Test classes: {test_classes}")
+                
+                preview = file_info.get('preview', '')
+                if preview:
+                    print(f"   Preview: {preview[:200]}{'...' if len(preview) > 200 else ''}")
+        
+        print(f"\n❓ {question}")
+        for key, description in options.items():
+            print(f"  {key}: {description}")
+        
+        while True:
+            decision = input(f"\nYour decision ({'/'.join(options.keys())}): ").strip().lower()
+            if decision in options:
+                print(f"✅ You decided: {options[decision]}")
+                return decision
+            print(f"❌ Invalid decision. Please choose from: {list(options.keys())}")
+    
+    def _handle_human_test_review_feedback(self, interrupt_data: Dict[str, Any]) -> Dict[str, str]:
+        """Handle test review feedback collection"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        
+        print(f"\n💬 {prompt}")
+        print(f"❓ {question}")
+        
+        feedback = input("\nYour detailed test feedback: ").strip()
+        
+        if not feedback:
+            feedback = "No specific test feedback provided"
+        
+        print(f"✅ Test feedback recorded: {feedback[:100]}{'...' if len(feedback) > 100 else ''}")
+        
+        return {"feedback": feedback}
+    
+    def _handle_human_test_improvement_suggestions(self, interrupt_data: Dict[str, Any]) -> str:
+        """Handle test improvement suggestions collection"""
+        
+        prompt = interrupt_data.get("prompt", "")
+        question = interrupt_data.get("question", "")
+        current_feedback = interrupt_data.get("current_feedback", "")
+        help_text = interrupt_data.get("help_text", "")
+        
+        print(f"\n💡 {prompt}")
+        if current_feedback:
+            print(f"📝 Current feedback: {current_feedback}")
+        print(f"❓ {question}")
+        if help_text:
+            print(f"ℹ️ {help_text}")
+        
+        suggestion = input("\nYour test improvement suggestion (or press Enter to skip): ").strip()
+        
+        if suggestion:
+            print(f"✅ Test improvement suggestion recorded: {suggestion}")
+        else:
+            print("⏭️ No test improvement suggestion provided - skipping")
+            suggestion = ""
     
     # ==================== DESIGN REVIEW INTERRUPT HANDLERS ====================
     
@@ -350,7 +644,8 @@ class DynamicWorkflowRunner:
         
         return suggestion
     
-    # ==================== CODE REVIEW INTERRUPT HANDLERS ====================
+    # ==================== NEW: CODE REVIEW INTERRUPT HANDLERS ====================
+    
     def _handle_code_review_choice_interrupt(self, interrupt_data: Dict[str, Any]) -> str:
         """Handle code review choice interrupt"""
         
