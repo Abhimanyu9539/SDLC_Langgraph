@@ -142,7 +142,7 @@ def _perform_po_review(user_stories: List[Dict[str, Any]], requirements: str) ->
         print(f"❌ Error during PO review: {e}")
         # Return fallback review result
         return _generate_fallback_review(user_stories)
-        
+
 
 def _format_stories_for_review(user_stories: List[Dict[str, Any]]) -> str:
     """Format user stories for AI review"""
@@ -407,7 +407,7 @@ def route_after_po_review(state: SDLCState) -> str:
     approval_status = state.get("approval_status", "")
     iteration_count = state.get("iteration_count", 0)
     
-    if approval_status == "approved":
+    if approval_status == "approved" :
         print("✅ Stories approved - proceeding to design phase")
         return "create_design_documents"
     elif iteration_count >= settings.MAX_ITERATIONS:
