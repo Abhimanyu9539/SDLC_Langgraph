@@ -22,6 +22,9 @@ def show_implementation_status():
     visualizer = WorkflowVisualizer()
     visualizer.display_implementation_status()
 
+# ==================== UPDATED run_sdlc_workflow FUNCTION ====================
+# Add this to main.py (replace existing function)
+
 async def run_sdlc_workflow():
     """Run the complete SDLC workflow"""
     
@@ -36,8 +39,6 @@ async def run_sdlc_workflow():
         print(f"Using default requirements: {user_requirements}")
     
     # Create the workflow
-    
-    
     workflow = create_sdlc_workflow()
     
     # Initial state
@@ -64,7 +65,7 @@ async def run_sdlc_workflow():
         print("\n⚡ Executing workflow...")
         result = await workflow.ainvoke(initial_state)
         
-        # Display results
+        # Display results with error handling
         print("\n" + "="*60)
         print("🎉 WORKFLOW EXECUTION RESULTS")
         print("="*60)
@@ -76,19 +77,56 @@ async def run_sdlc_workflow():
         if result['user_stories']:
             print("\n📖 Generated User Stories:")
             for i, story in enumerate(result['user_stories'], 1):
-                print(f"\n{i}. {story['id']}: {story['title']}")
-                print(f"   Priority: {story['priority']} | Points: {story['story_points']}")
-                print(f"   Description: {story['description']}")
-                print(f"   Acceptance Criteria: {len(story['acceptance_criteria'])} criteria")
+                # Safe access to story fields with fallbacks
+                story_id = story.get('id', f'US-{i:03d}')
+                story_title = story.get('title', 'Untitled Story')
+                story_priority = story.get('priority', 'Unknown')
+                story_points = story.get('story_points', 'TBD')
+                
+                print(f"{i}. {story_id}: {story_title}")
+                print(f"   Priority: {story_priority} | Points: {story_points}")
+                
+                # Show description if available
+                if story.get('description'):
+                    description = story['description']
+                    if len(description) > 100:
+                        description = description[:97] + "..."
+                    print(f"   Description: {description}")
+                
+                # Show acceptance criteria count
+                criteria_count = len(story.get('acceptance_criteria', []))
+                print(f"   Acceptance Criteria: {criteria_count} criteria defined")
+                print()
+        
+        # Show approval status
+        approval_status = result.get('approval_status', 'Unknown')
+        status_emoji = {"approved": "✅", "feedback": "⚠️", "rejected": "❌"}.get(approval_status, "❓")
+        print(f"{status_emoji} Final Approval Status: {approval_status.upper()}")
+        
+        # Show review feedback if available
+        if result.get('review_feedback'):
+            feedback = result['review_feedback']
+            if feedback.get('feedback'):
+                print(f"\n💬 Latest Feedback: {feedback['feedback'][:200]}...")
         
         print("\n✅ Workflow completed successfully!")
-        
         return result
         
     except Exception as e:
         print(f"\n❌ Error running workflow: {e}")
+        print(f"🔍 Error type: {type(e).__name__}")
+        
+        # Try to show partial results if available
+        try:
+            if 'result' in locals() and result.get('user_stories'):
+                print(f"\n📋 Partial Results Available:")
+                print(f"   Stories generated: {len(result['user_stories'])}")
+                print(f"   Current stage: {result.get('current_stage', 'unknown')}")
+        except:
+            pass
+        
         return None
-
+        
 async def main():
     """Main application entry point"""
     
