@@ -55,9 +55,24 @@ def _validate_and_enhance_requirements(raw_requirements:str) -> str:
         """
     
 
-def ui_user_input_requirements(state: SDLCState) -> SDLCState:
+def ui_user_inputs_requirements(state: SDLCState) -> SDLCState:
     """
     Node 1: Capture and validate user input requirements
     """
     print("🚀 Starting SDLC Workflow - Capturing Requirements")
     
+    # Validate and enhance requirements using OpenAI
+    enhanced_requirements = _validate_and_enhance_requirements(state["requirements"])
+    
+    # Update state
+    updated_state = {
+        **state,
+        "requirements": enhanced_requirements,
+        "current_stage": "requirements_captured",
+        "timestamp": datetime.now().isoformat(),
+        "iteration_count": 0,
+        "approval_status": "pending"
+    }
+    
+    print(f"✅ Requirements captured and validated")
+    return updated_state
