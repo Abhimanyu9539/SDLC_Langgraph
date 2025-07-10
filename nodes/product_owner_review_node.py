@@ -143,7 +143,6 @@ def _perform_po_review(user_stories: List[Dict[str, Any]], requirements: str) ->
         # Return fallback review result
         return _generate_fallback_review(user_stories)
         
-
 def _format_stories_for_review(user_stories: List[Dict[str, Any]]) -> str:
     """Format user stories for AI review"""
     
@@ -151,22 +150,16 @@ def _format_stories_for_review(user_stories: List[Dict[str, Any]]) -> str:
     
     for story in user_stories:
         story_text = f"""
-STORY ID: {story.get('id', 'N/A')}
-TITLE: {story.get('title', 'N/A')}
-DESCRIPTION: {story.get('description', 'N/A')}
-PRIORITY: {story.get('priority', 'N/A')}
-STORY POINTS: {story.get('story_points', 'N/A')}
-PERSONA: {story.get('persona', 'N/A')}
-
-ACCEPTANCE CRITERIA:
-{chr(10).join(f"  • {criteria}" for criteria in story.get('acceptance_criteria', []))}
-
-BUSINESS VALUE: {story.get('business_value', 'N/A')}
-
-DEFINITION OF DONE:
-{chr(10).join(f"  • {dod}" for dod in story.get('definition_of_done', []))}
-
-DEPENDENCIES: {', '.join(story.get('dependencies', [])) if story.get('dependencies') else 'None'}
+        STORY ID: {story.get('id', 'N/A')}
+        TITLE: {story.get('title', 'N/A')}
+        DESCRIPTION: {story.get('description', 'N/A')}
+        PRIORITY: {story.get('priority', 'N/A')}
+        STORY POINTS: {story.get('story_points', 'N/A')}
+        PERSONA: {story.get('persona', 'N/A')}
+        ACCEPTANCE CRITERIA:{chr(10).join(f"  • {criteria}" for criteria in story.get('acceptance_criteria', []))}
+        BUSINESS VALUE: {story.get('business_value', 'N/A')}
+        DEFINITION OF DONE:{chr(10).join(f"  • {dod}" for dod in story.get('definition_of_done', []))}
+        DEPENDENCIES: {', '.join(story.get('dependencies', [])) if story.get('dependencies') else 'None'}
         """
         formatted_stories.append(story_text.strip())
     
@@ -292,8 +285,7 @@ def revise_user_stories(state: SDLCState) -> SDLCState:
 
 def _generate_revised_stories(
     current_stories: List[Dict[str, Any]], 
-    review_feedback: Dict[str, Any]
-) -> List[Dict[str, Any]]:
+    review_feedback: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Generate revised user stories based on PO feedback"""
     
     llm_utils = LLMUtils()
@@ -319,12 +311,12 @@ def _generate_revised_stories(
     """
     
     feedback_text = f"""
-Review Status: {review_feedback.get('status', 'unknown')}
-Overall Feedback: {review_feedback.get('feedback', '')}
-Suggestions: {review_feedback.get('suggestions', [])}
-Approved Stories: {review_feedback.get('approved_stories', [])}
-Stories Needing Revision: {review_feedback.get('rejected_stories', [])}
-Missing Functionality: {review_feedback.get('missing_functionality', [])}
+        Review Status: {review_feedback.get('status', 'unknown')}
+        Overall Feedback: {review_feedback.get('feedback', '')}
+        Suggestions: {review_feedback.get('suggestions', [])}
+        Approved Stories: {review_feedback.get('approved_stories', [])}
+        Stories Needing Revision: {review_feedback.get('rejected_stories', [])}
+        Missing Functionality: {review_feedback.get('missing_functionality', [])}
     """
     
     stories_text = _format_stories_for_review(current_stories)
@@ -362,10 +354,7 @@ Missing Functionality: {review_feedback.get('missing_functionality', [])}
         # Fallback: return original stories trimmed to limit
         return current_stories[:settings.MAX_USER_STORIES]
 
-def _apply_basic_revisions(
-    stories: List[Dict[str, Any]], 
-    feedback: Dict[str, Any]
-) -> List[Dict[str, Any]]:
+def _apply_basic_revisions(stories: List[Dict[str, Any]], feedback: Dict[str, Any]) -> List[Dict[str, Any]]:
     """Apply basic revisions when AI fails - maintain story limit"""
     
     # Ensure we have exactly MAX_USER_STORIES
