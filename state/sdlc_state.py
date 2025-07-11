@@ -24,3 +24,6 @@ class SDLCState(TypedDict):
     security_scan_results: Dict[str, Any]
     test_results: Dict[str, Any]
     deployment_status: str
+
+    review_type: str  # "human", "ai", "auto" 
+    human_review_requested: bool  # Flag for human review
