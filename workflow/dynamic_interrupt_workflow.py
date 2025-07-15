@@ -9,8 +9,7 @@ from nodes.user_stories_node import auto_generate_user_stories
 from nodes.dynamic_review_node import (
     product_owner_review_dynamic, 
     revise_user_stories_dynamic, 
-    route_after_po_review_dynamic,
-    create_design_documents
+    route_after_po_review_dynamic
 )
 
 def create_dynamic_interrupt_workflow():
