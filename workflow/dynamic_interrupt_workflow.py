@@ -18,6 +18,8 @@ from nodes.design_review_node import (
     route_after_design_review_dynamic
 )
 
+from nodes.generate_code_node import generate_code
+
 def create_dynamic_interrupt_workflow():
     """
     Create SDLC workflow using DYNAMIC INTERRUPTS (Official LangGraph Pattern)
@@ -44,7 +46,8 @@ def create_dynamic_interrupt_workflow():
     workflow.add_node("create_design_documents", create_design_documents)  # ← NEW: Design docs generation (no interrupts)
     workflow.add_node("design_review", design_review_dynamic)  # ← NEW: Design review with interrupts
     workflow.add_node("revise_design_documents", revise_design_documents_dynamic)  # ← NEW: Design revision
-    
+    workflow.add_node("generate_code", generate_code)
+
     # Set entry point
     workflow.set_entry_point("ui_user_inputs_requirements")
     
@@ -73,13 +76,14 @@ def create_dynamic_interrupt_workflow():
         "design_review",
         route_after_design_review_dynamic,
         {
-            "generate_code": END,  # Approved - end for now (future: go to code generation)
+            "generate_code": "generate_code",  # Approved - end for now (future: go to code generation)
             "revise_design_documents": "revise_design_documents"  # Needs revision
         }
     )
     
     # Route back to design review after design revision (for iteration cycles)
     workflow.add_edge("revise_design_documents", "design_review")
+    workflow.add_edge("generate_code", END)
     
     # ⭐ COMPILE WITHOUT interrupt_before - interrupts are INSIDE nodes
     compiled_workflow = workflow.compile(
