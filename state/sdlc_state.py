@@ -38,6 +38,3 @@ class SDLCState(TypedDict):
     # ===== LEGACY FIELDS (for backward compatibility) =====
     review_type: str  # Still used for compatibility
     human_review_requested: bool  # Still used for compatibility
-    
-    # Note: With dynamic interrupts, these legacy fields are less important
-    # because interrupt() handles the user choice directly within nodes
