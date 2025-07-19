@@ -425,10 +425,10 @@ def route_after_security_review_dynamic(state: SDLCState) -> str:
     
     if approval_status == "approve":
         print("✅ Security approved - proceeding to next phase")
-        return "end_workflow"  # End for now, can be changed to next phase later
+        return "generate_test_cases"  # End for now, can be changed to next phase later
     elif iteration_count >= settings.MAX_ITERATIONS:
         print(f"⚠️ Maximum iterations ({settings.MAX_ITERATIONS}) reached - proceeding to next phase")
-        return "end_workflow"
+        return "generate_test_cases"
     else:
         print(f"⚠️ Security issues need fixing - iteration {iteration_count + 1}/{settings.MAX_ITERATIONS}")
         return "fix_code_after_security"

@@ -459,10 +459,10 @@ def route_after_test_review_dynamic(state: SDLCState) -> str:
     
     if approval_status == "approve":
         print("✅ Test cases approved - proceeding to QA testing phase")
-        return "qa_testing"  # Next phase: execute the tests
+        return "deployment"  # Next phase: execute the tests
     elif iteration_count >= settings.MAX_ITERATIONS:
         print(f"⚠️ Maximum iterations ({settings.MAX_ITERATIONS}) reached - proceeding to QA testing")
-        return "qa_testing"
+        return "deployment"
     else:
         print(f"⚠️ Test cases need revision - iteration {iteration_count + 1}/{settings.MAX_ITERATIONS}")
         return "revise_test_cases"
