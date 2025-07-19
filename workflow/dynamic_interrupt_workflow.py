@@ -73,113 +73,113 @@ def create_dynamic_interrupt_workflow():
     # ===== ADD ALL NODES TO THE GRAPH =====
     
     # Core workflow nodes
-    workflow.add_node("ui_user_inputs_requirements", ui_user_inputs_requirements)
-    workflow.add_node("auto_generate_user_stories", auto_generate_user_stories)
+    workflow.add_node("Input Requirements", ui_user_inputs_requirements)
+    workflow.add_node("Auto Generate User Stories", auto_generate_user_stories)
     
     # Product Owner Review cycle
-    workflow.add_node("product_owner_review", product_owner_review_dynamic)
-    workflow.add_node("revise_user_stories", revise_user_stories_dynamic)
+    workflow.add_node("Product Owner Review", product_owner_review_dynamic)
+    workflow.add_node("Revise User Stories", revise_user_stories_dynamic)
     
     # Design phase
-    workflow.add_node("create_design_documents", create_design_documents)
-    workflow.add_node("design_review", design_review_dynamic)
-    workflow.add_node("revise_design_documents", revise_design_documents_dynamic)
+    workflow.add_node("Create Design Docs", create_design_documents)
+    workflow.add_node("Design Review", design_review_dynamic)
+    workflow.add_node("Revise Design Docs", revise_design_documents_dynamic)
     
     # Code generation and review cycle
-    workflow.add_node("generate_code", generate_code)
-    workflow.add_node("code_review", code_review_dynamic)
-    workflow.add_node("fix_code_after_review", fix_code_after_review_dynamic)
+    workflow.add_node("Generate Code", generate_code)
+    workflow.add_node("Code Review", code_review_dynamic)
+    workflow.add_node("Fix Code After Review", fix_code_after_review_dynamic)
     
     # Security review cycle
-    workflow.add_node("security_review", security_review_dynamic)
-    workflow.add_node("fix_code_after_security", fix_code_after_security_dynamic)
+    workflow.add_node("Security Review", security_review_dynamic)
+    workflow.add_node("Fix Code after Security", fix_code_after_security_dynamic)
     
     # Test cases cycle
-    workflow.add_node("generate_test_cases", generate_test_cases)
-    workflow.add_node("test_cases_review", test_cases_review_dynamic)
-    workflow.add_node("revise_test_cases", revise_test_cases_dynamic)
+    workflow.add_node("Generate Test Cases", generate_test_cases)
+    workflow.add_node("Test Cases Review", test_cases_review_dynamic)
+    workflow.add_node("Revise Test Cases", revise_test_cases_dynamic)
     
     # Deployment
-    workflow.add_node("deployment", deployment)
+    workflow.add_node("Deployment", deployment)
     
     # ===== SET ENTRY POINT =====
-    workflow.set_entry_point("ui_user_inputs_requirements")
+    workflow.set_entry_point("Input Requirements")
     
     # ===== DEFINE WORKFLOW EDGES =====
     
     # Initial flow: Requirements → User Stories → PO Review
-    workflow.add_edge("ui_user_inputs_requirements", "auto_generate_user_stories")
-    workflow.add_edge("auto_generate_user_stories", "product_owner_review")
+    workflow.add_edge("Input Requirements", "Auto Generate User Stories")
+    workflow.add_edge("Auto Generate User Stories", "Product Owner Review")
     
     # ===== PRODUCT OWNER REVIEW CYCLE =====
     workflow.add_conditional_edges(
-        "product_owner_review",
+        "Product Owner Review",
         route_after_po_review_dynamic,
         {
-            "create_design_documents": "create_design_documents",  # Approved → Design phase
-            "revise_user_stories": "revise_user_stories"  # Needs revision
+            "Create Design Docs": "Create Design Docs",  # Approved → Design phase
+            "Revise User Stories": "Revise User Stories"  # Needs revision
         }
     )
     # Route back to PO review after user story revision
-    workflow.add_edge("revise_user_stories", "product_owner_review")
+    workflow.add_edge("Revise User Stories", "Product Owner Review")
     
     # ===== DESIGN PHASE =====
-    workflow.add_edge("create_design_documents", "design_review")
+    workflow.add_edge("Create Design Docs", "Design Review")
     
     # ===== DESIGN REVIEW CYCLE =====
     workflow.add_conditional_edges(
-        "design_review",
+        "Design Review",
         route_after_design_review_dynamic,
         {
-            "generate_code": "generate_code",  # Approved → Code generation
-            "revise_design_documents": "revise_design_documents"  # Needs revision
+            "Generate Code": "Generate Code",  # Approved → Code generation
+            "Revise Design Docs": "Revise Design Docs"  # Needs revision
         }
     )
     # Route back to design review after design revision
-    workflow.add_edge("revise_design_documents", "design_review")
+    workflow.add_edge("Revise Design Docs", "Design Review")
     
     # ===== CODE GENERATION AND REVIEW CYCLE =====
-    workflow.add_edge("generate_code", "code_review")
+    workflow.add_edge("Generate Code", "Code Review")
     
     workflow.add_conditional_edges(
-        "code_review",
+        "Code Review",
         route_after_code_review_dynamic,
         {
-            "security_review": "security_review",  # Approved → Security review
-            "fix_code_after_review": "fix_code_after_review"  # Needs fixes
+            "Security Review": "Security Review",  # Approved → Security review
+            "Fix Code After Review": "Fix Code After Review"  # Needs fixes
         }
     )
     # Route back to code review after code fixes
-    workflow.add_edge("fix_code_after_review", "code_review")
+    workflow.add_edge("Fix Code After Review", "Code Review")
     
     # ===== SECURITY REVIEW CYCLE =====
     workflow.add_conditional_edges(
-        "security_review",
+        "Security Review",
         route_after_security_review_dynamic,
         {
-            "generate_test_cases": "generate_test_cases",  # Approved → Test generation
-            "fix_code_after_security": "fix_code_after_security"  # Needs security fixes
+            "Generate Test Cases": "Generate Test Cases",  # Approved → Test generation
+            "Fix Code after Security": "Fix Code after Security"  # Needs security fixes
         }
     )
     # Route back to security review after security fixes
-    workflow.add_edge("fix_code_after_security", "security_review")
+    workflow.add_edge("Fix Code after Security", "Security Review")
     
     # ===== TEST CASES CYCLE =====
-    workflow.add_edge("generate_test_cases", "test_cases_review")
+    workflow.add_edge("Generate Test Cases", "Test Cases Review")
     
     workflow.add_conditional_edges(
-        "test_cases_review",
+        "Test Cases Review",
         route_after_test_review_dynamic,
         {
-            "deployment": "deployment",  # Approved → Deployment
-            "revise_test_cases": "revise_test_cases"  # Needs test improvements
+            "Deployment": "Deployment",  # Approved → Deployment
+            "Revise Test Cases": "Revise Test Cases"  # Needs test improvements
         }
     )
     # Route back to test review after test revision
-    workflow.add_edge("revise_test_cases", "test_cases_review")
+    workflow.add_edge("Revise Test Cases", "Test Cases Review")
     
     # ===== DEPLOYMENT (END) =====
-    workflow.add_edge("deployment", END)
+    workflow.add_edge("Deployment", END)
     
     # ===== COMPILE WORKFLOW =====
     compiled_workflow = workflow.compile(

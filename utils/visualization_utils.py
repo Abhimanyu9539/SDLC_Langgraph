@@ -40,7 +40,7 @@ class WorkflowVisualizer:
             
         try:
             # Get Mermaid code from LangGraph
-            mermaid_code = self.workflow.get_graph().draw_mermaid()
+            mermaid_code = self.workflow.get_graph(xray=True).draw_mermaid()
             
             print("\n" + "="*80)
             print("🔄 ACTUAL WORKFLOW MERMAID DIAGRAM")
