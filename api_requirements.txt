@@ -1,0 +1,10 @@
+# FastAPI Backend Requirements
+fastapi
+uvicorn[standard]
+websockets
+python-multipart
+pydantic==2.11.7
+python-socketio==5.11.0
+
+# Include existing requirements
+-r requirements.txt

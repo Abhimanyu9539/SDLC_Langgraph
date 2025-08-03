@@ -42,7 +42,7 @@ def create_proper_interrupt_workflow():
         checkpointer= MemorySaver()
     )
     
-    print("🔧 Proper LangGraph interrupt workflow created")
+    print("[TOOLS] Proper LangGraph interrupt workflow created")
     print("🛑 Will pause BEFORE product_owner_review node")
     print("💡 Use workflow.update_state() to modify review behavior")
     

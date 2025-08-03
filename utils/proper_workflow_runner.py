@@ -46,7 +46,7 @@ class ProperWorkflowRunner:
                     # Update state based on choice
                     state_updates = self._prepare_state_updates_for_choice(choice)
                     
-                    print(f"\n🔧 Updating workflow state for {choice} choice...")
+                    print(f"\n[TOOLS] Updating workflow state for {choice} choice...")
                     print(f"📝 State updates: {state_updates}")
                     
                     await self.workflow.aupdate_state(self.config, state_updates)

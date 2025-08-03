@@ -21,7 +21,7 @@ def revise_test_cases_dynamic(state: SDLCState) -> SDLCState:
     6. Prepares for next test review cycle
     """
     
-    print("\n🔧 Revising Test Cases Based on Review Feedback")
+    print("\n[TOOLS] Revising Test Cases Based on Review Feedback")
     print("🧪 Improving test coverage, quality, and completeness")
     
     current_test_cases = state.get("test_cases", {})

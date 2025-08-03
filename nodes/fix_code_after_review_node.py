@@ -19,8 +19,8 @@ def fix_code_after_review_dynamic(state: SDLCState) -> SDLCState:
     5. Prepares for next review cycle
     """
     
-    print("\n🔧 Fixing Code Based on Review Feedback")
-    print("🎯 Applying code improvements and suggestions")
+    print("\n[TOOLS] Fixing Code Based on Review Feedback")
+    print("[TARGET] Applying code improvements and suggestions")
     
     current_code = state.get("code", {})
     review_feedback = state.get("review_feedback", {})

@@ -20,7 +20,7 @@ def fix_code_after_security_dynamic(state: SDLCState) -> SDLCState:
     5. Prepares for next security review cycle
     """
     
-    print("\n🔧 Fixing Code Based on Security Review Feedback")
+    print("\n[TOOLS] Fixing Code Based on Security Review Feedback")
     print("🔒 Applying security improvements and vulnerability fixes")
     
     current_code = state.get("code", {})

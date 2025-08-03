@@ -428,7 +428,7 @@ class DynamicWorkflowRunner:
             if test_stats:
                 print(f"  🔢 Test functions: {test_stats.get('total_test_functions', 0)}")
                 print(f"  📋 Test classes: {test_stats.get('test_classes', 0)}")
-                print(f"  🔧 Fixtures: {test_stats.get('fixtures', 0)}")
+                print(f"  [TOOLS] Fixtures: {test_stats.get('fixtures', 0)}")
             
             coverage_areas = test_preview.get('coverage_areas', [])
             if coverage_areas:
@@ -466,7 +466,7 @@ class DynamicWorkflowRunner:
             if statistics:
                 print(f"  🔢 Test functions: {statistics.get('total_test_functions', 0)}")
                 print(f"  📋 Test classes: {statistics.get('test_classes', 0)}")
-                print(f"  🔧 Fixtures: {statistics.get('fixtures', 0)}")
+                print(f"  [TOOLS] Fixtures: {statistics.get('fixtures', 0)}")
                 print(f"  📊 Parametrized tests: {statistics.get('parametrized_tests', 0)}")
             
             if coverage_areas:

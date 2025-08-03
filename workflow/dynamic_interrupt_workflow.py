@@ -187,7 +187,7 @@ def create_dynamic_interrupt_workflow():
     )
     
     # ===== WORKFLOW INFORMATION =====
-    print("🔧 Complete SDLC Dynamic Interrupt Workflow Created")
+    print("[TOOLS] Complete SDLC Dynamic Interrupt Workflow Created")
     print("🎯 Uses interrupt() INSIDE nodes (official LangGraph pattern)")
     print("⚡ Resume with Command(resume=value)")
     print("\n🆕 Complete SDLC Coverage:")

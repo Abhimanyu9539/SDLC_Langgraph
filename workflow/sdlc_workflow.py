@@ -40,6 +40,6 @@ def create_sdlc_workflow():
     # Compile the workflow
     compiled_workflow = workflow.compile()
     
-    print("🔧 LangGraph workflow created")
+    print("[TOOLS] LangGraph workflow created")
     return compiled_workflow
 
