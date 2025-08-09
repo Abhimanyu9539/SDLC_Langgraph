@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 
-const API_BASE_URL = '/api'
+const API_BASE_URL = ''
 
 // Configure axios
 const apiClient = axios.create({

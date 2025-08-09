@@ -174,7 +174,7 @@ export default function Design() {
         </div>
       ) : (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <div className="text-4xl mb-4">📐</div>
+          <div className="text-4xl mb-4">[RULER]</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             Design Documents Not Generated Yet
           </h3>
